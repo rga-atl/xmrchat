@@ -109,14 +109,36 @@ Rooms can optionally enable transparent, consent-based browser mining. The room 
 - **Threads:** auto-detected (`navigator.hardwareConcurrency`)
 - **Fallback:** if the mining script fails to load, the hook runs in simulation mode (no real hashing)
 
+### Architecture
+
+Browsers can't speak Stratum/TCP directly, so a small Node.js WebSocket-to-Stratum proxy ships in [`mining-proxy/`](mining-proxy/) and runs as its own pod inside the cluster (`ghcr.io/rga-atl/xmrchat-mining-proxy`). It bridges browser WebSocket frames to MoneroOcean's Stratum endpoint and exposes `/healthz` for probes.
+
+```
+Browser  ──wss──▶  chat.xmr.vc/mining-ws  ──▶  Cloudflared  ──▶  mining-proxy:8080  ──TCP/Stratum──▶  gulf.moneroocean.stream:10128
+```
+
+The proxy is a `ClusterIP` service — never exposed directly. Public access is path-routed through the same Cloudflare tunnel that serves the app:
+
+- `chat.xmr.vc/*` → `chatterbox:3000`
+- `chat.xmr.vc/mining-ws/*` → `mining-proxy:8080`
+
+Add the second public hostname rule in the Cloudflare Zero Trust dashboard (Tunnel → Public Hostnames), placing it **above** the catch-all so the path matches first.
+
 ### Environment Variables
 
 | Variable | Description | Default |
 |---|---|---|
 | `NEXT_PUBLIC_MINING_SCRIPT_URL` | URL of the browser mining JS library | `/mining/worker.js` |
-| `NEXT_PUBLIC_MINING_PROXY_URL` | WebSocket URL of the Stratum proxy | `wss://mining-proxy.xmr.vc` |
+| `NEXT_PUBLIC_MINING_PROXY_URL` | WebSocket URL of the Stratum proxy | `wss://chat.xmr.vc/mining-ws` |
 
-> Browsers can't speak Stratum/TCP directly, so a WebSocket-to-Stratum proxy (e.g. self-hosted [webminerpool](https://github.com/nicehash/webminerpool) or a Node.js `ws`+`net` bridge) is required to forward connections to MoneroOcean.
+The `mining-proxy` pod itself is configured via:
+
+| Variable | Description | Default |
+|---|---|---|
+| `POOL_HOST` | Stratum pool hostname | `gulf.moneroocean.stream` |
+| `POOL_PORT` | Stratum pool port | `10128` |
+| `PORT` | Proxy listen port | `8080` |
+| `MAX_CONNS_PER_IP` | Per-client-IP connection cap | `8` |
 
 ### Ethics
 

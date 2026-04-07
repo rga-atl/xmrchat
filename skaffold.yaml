@@ -12,6 +12,14 @@ build:
           BUILDKIT_INLINE_CACHE: "1"
       platforms:
         - linux/arm64
+    - image: ghcr.io/rga-atl/xmrchat-mining-proxy
+      context: mining-proxy
+      docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+      platforms:
+        - linux/arm64
 
 manifests:
   kustomize:

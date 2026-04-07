@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mining-proxy
+  labels:
+    app: mining-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mining-proxy
+  template:
+    metadata:
+      labels:
+        app: mining-proxy
+    spec:
+      containers:
+        - name: mining-proxy
+          image: ghcr.io/rga-atl/xmrchat-mining-proxy
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: ws
+              protocol: TCP
+          env:
+            - name: POOL_HOST
+              value: "gulf.moneroocean.stream"
+            - name: POOL_PORT
+              value: "10128"
+            - name: PORT
+              value: "8080"
+            - name: MAX_CONNS_PER_IP
+              value: "8"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      imagePullSecrets:
+        - name: ghcr-secret
+      restartPolicy: Always
