@@ -30,6 +30,7 @@ Create a room with a name and share the link with your partners so they can join
 - **Linting/Formatting:** oxlint, oxfmt
 - **Testing:** Vitest, React Testing Library
 - **Real-time:** WebRTC (peer-to-peer), Socket.IO (signaling)
+- **Deployment** Skaffold
 - **Infrastructure:** Docker, Kubernetes, Skaffold
 - **Mining:** WebMiner (browser RandomX `rx/0`), MoneroOcean pool, WebSocket-to-Stratum proxy
 
@@ -147,7 +148,7 @@ This implementation is **opt-in only**: explicit consent dialog, visible status,
 ## Authors
 
 - **[mrganser](http://mrganser.com)** — original author
-- **[rga-atl](https://github.com/rga-atl)** — crypto mining integration, Kubernetes deployment
+- **[rga-atl](https://github.com/rga-atl)** — crypto mining integration, containerization, and Kubernetes deployment
 
 ## License
 
