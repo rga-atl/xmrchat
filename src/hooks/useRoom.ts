@@ -18,6 +18,7 @@ export function useRoom(roomId: string, userName?: string) {
     error: null,
   });
   const [screenSharingPeerId, setScreenSharingPeerId] = useState<string | null>(null);
+  const [roomWalletAddress, setRoomWalletAddress] = useState<string | null>(null);
 
   // Refs to access current state in event handlers
   const screenShareRef = useRef(screenShare);
@@ -106,7 +107,7 @@ export function useRoom(roomId: string, userName?: string) {
   });
 
   const joinRoom = useCallback(
-    async (options?: { video?: boolean; audio?: boolean }) => {
+    async (options?: { video?: boolean; audio?: boolean; walletAddress?: string }) => {
       if (!socket || !isConnected) {
         setRoomState((prev) => ({ ...prev, status: 'error', error: 'Not connected to server' }));
         return;
@@ -116,6 +117,7 @@ export function useRoom(roomId: string, userName?: string) {
 
       const initialVideo = options?.video ?? true;
       const initialAudio = options?.audio ?? true;
+      const wallet = options?.walletAddress?.trim() || undefined;
 
       const stream = await localStream.startStream({ video: initialVideo, audio: initialAudio });
       if (!stream) {
@@ -132,6 +134,7 @@ export function useRoom(roomId: string, userName?: string) {
         name: userName || undefined,
         videoEnabled: initialVideo,
         audioEnabled: initialAudio,
+        walletAddress: wallet,
       });
     },
     [socket, isConnected, roomId, localStream, userName]
@@ -205,10 +208,12 @@ export function useRoom(roomId: string, userName?: string) {
       roomId: joinedRoomId,
       peerId,
       peers,
+      walletAddress,
     }: {
       roomId: string;
       peerId: string;
       peers: Array<{ id: string; name?: string; videoEnabled: boolean; audioEnabled: boolean }>;
+      walletAddress?: string;
     }) => {
       setRoomState({
         roomId: joinedRoomId,
@@ -216,6 +221,8 @@ export function useRoom(roomId: string, userName?: string) {
         status: 'connected',
         error: null,
       });
+
+      setRoomWalletAddress(walletAddress || null);
 
       peers.forEach((peer) => {
         peerConnections.createOffer(peer.id, peer.name, {
@@ -314,5 +321,6 @@ export function useRoom(roomId: string, userName?: string) {
     leaveRoom,
     moderation,
     wasKicked,
+    roomWalletAddress,
   };
 }

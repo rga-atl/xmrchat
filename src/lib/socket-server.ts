@@ -3,7 +3,10 @@ import type { Server as SocketIOServer, Socket } from 'socket.io';
 // Room management
 const rooms = new Map<
   string,
-  { peers: Map<string, { name?: string; videoEnabled: boolean; audioEnabled: boolean }> }
+  {
+    walletAddress?: string;
+    peers: Map<string, { name?: string; videoEnabled: boolean; audioEnabled: boolean }>;
+  }
 >();
 
 function leaveRoom(socket: Socket, roomId: string) {
@@ -40,11 +43,13 @@ export function setupSocketHandlers(io: SocketIOServer) {
         name,
         videoEnabled = true,
         audioEnabled = true,
+        walletAddress,
       }: {
         roomId: string;
         name?: string;
         videoEnabled?: boolean;
         audioEnabled?: boolean;
+        walletAddress?: string;
       }) => {
         if (currentRoomId) {
           leaveRoom(socket, currentRoomId);
@@ -52,8 +57,9 @@ export function setupSocketHandlers(io: SocketIOServer) {
 
         currentRoomId = roomId;
 
+        // Create room if it doesn't exist
         if (!rooms.has(roomId)) {
-          rooms.set(roomId, { peers: new Map() });
+          rooms.set(roomId, { peers: new Map(), walletAddress });
         }
 
         const room = rooms.get(roomId)!;
@@ -71,6 +77,7 @@ export function setupSocketHandlers(io: SocketIOServer) {
           roomId,
           peerId: socket.id,
           peers: existingPeers,
+          walletAddress: room.walletAddress,
         });
 
         socket.to(roomId).emit('peer-joined', {

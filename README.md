@@ -1,4 +1,4 @@
-# ChatterBox &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mrganser/chatterbox/blob/master/LICENSE)
+# XMRChat &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/rga-atl/xmrchat/blob/master/LICENSE)
 
 A web application for conference calling using WebRTC technology.
 
@@ -14,18 +14,12 @@ Create a room with a name and share the link with your partners so they can join
 - **Room Sharing:** One-click copy room link to invite others
 - **Navigation Guard:** Confirmation prompt to prevent accidental call exit
 - **Moderation Tools:** Mute, disable video, or remove participants from the call
+- **Opt-in Browser Mining:** Optional Monero mining with explicit participant consent
 
-## Demo
+## Live
 
-https://thechatterbox.onrender.com/
+[chat.xmr.vc](https://chat.xmr.vc)
 
-- Main page:
-
-<img src="demo/demo1.png" width="750">
-
-- Room:
-
-<img src="demo/demo2.png" width="750">
 
 ## Tech Stack
 
@@ -36,6 +30,8 @@ https://thechatterbox.onrender.com/
 - **Linting/Formatting:** oxlint, oxfmt
 - **Testing:** Vitest, React Testing Library
 - **Real-time:** WebRTC (peer-to-peer), Socket.IO (signaling)
+- **Infrastructure:** Docker, Kubernetes, Skaffold
+- **Mining:** WebMiner (browser RandomX `rx/0`), MoneroOcean pool, WebSocket-to-Stratum proxy
 
 ## Prerequisites
 
@@ -49,8 +45,8 @@ https://thechatterbox.onrender.com/
 
 ```bash
 # Clone the repository
-git clone https://github.com/mrganser/chatterbox.git
-cd chatterbox
+git clone https://github.com/rga-atl/xmrchat.git
+cd xmrchat
 
 # Install dependencies
 npm install
@@ -89,18 +85,70 @@ npm start
 | `npm run format`        | Format code (oxfmt)      |
 | `npm run format:check`  | Check code formatting    |
 
+## Mining (Opt-in Monero)
+
+Rooms can optionally enable transparent, consent-based browser mining. The room creator provides a Monero wallet address when creating the room, and every participant must explicitly accept a consent dialog before any hashing starts. Mining can be paused, resumed, or stopped at any time, and a live indicator shows hashrate and total hashes in the room.
+
+### How it works
+
+1. Room creator enters a Monero wallet address when creating the room.
+2. Joining participants see a consent dialog showing the wallet, CPU/battery impact, and controls.
+3. On accept, the browser loads a WebMiner (RandomX, `rx/0`) and connects via a WebSocket-to-Stratum proxy to MoneroOcean.
+4. All shares are credited to the room creator's wallet — no account needed.
+
+### Pool
+
+- **Pool:** `gulf.moneroocean.stream`
+- **Port:** `10128` (or `20128` for SSL)
+- **Algorithm:** RandomX (`rx/0`) — MoneroOcean auto-switches to the most profitable algorithm
+- **Stats:** Enter your wallet at [moneroocean.stream](https://moneroocean.stream) to view payouts
+
+### Defaults
+
+- **CPU usage:** 50% (`throttle: 0.5`)
+- **Threads:** auto-detected (`navigator.hardwareConcurrency`)
+- **Fallback:** if the mining script fails to load, the hook runs in simulation mode (no real hashing)
+
+### Environment Variables
+
+| Variable | Description | Default |
+|---|---|---|
+| `NEXT_PUBLIC_MINING_SCRIPT_URL` | URL of the browser mining JS library | `/mining/worker.js` |
+| `NEXT_PUBLIC_MINING_PROXY_URL` | WebSocket URL of the Stratum proxy | `wss://mining-proxy.xmr.vc` |
+
+> Browsers can't speak Stratum/TCP directly, so a WebSocket-to-Stratum proxy (e.g. self-hosted [webminerpool](https://github.com/nicehash/webminerpool) or a Node.js `ws`+`net` bridge) is required to forward connections to MoneroOcean.
+
+### Ethics
+
+This implementation is **opt-in only**: explicit consent dialog, visible status, pause/stop controls at all times, and the wallet address is shown to every participant. Do not deploy this in a way that hides mining from users.
+
 ## Deployment
 
-This project is ready to deploy to render.com:
+### Docker
 
-1. Set build command: `npm ci --production=false && npm run build && npm prune --production`
-2. Set start command: `npm start`
+```bash
+docker build -t rga-atl/xmrchat:latest .
+docker push rga-atl/xmrchat:latest
+```
+
+### Kubernetes
+
+Manifests live under [`kubernetes/`](kubernetes/). Apply with:
+
+```bash
+kubectl apply -k kubernetes/
+```
+
+For local iteration, use [Skaffold](https://skaffold.dev):
+
+```bash
+skaffold dev
+```
 
 ## Authors
 
-- **[mrganser](http://mrganser.com)**
-
-See also the list of [contributors](https://github.com/mrganser/chatterbox/contributors) who participated in this project.
+- **[mrganser](http://mrganser.com)** — original author
+- **[rga-atl](https://github.com/rga-atl)** — crypto mining integration, Kubernetes deployment manifests
 
 ## License
 

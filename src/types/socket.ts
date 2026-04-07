@@ -3,6 +3,7 @@ export interface ServerToClientEvents {
     roomId: string;
     peerId: string;
     peers: Array<{ id: string; name?: string; videoEnabled: boolean; audioEnabled: boolean }>;
+    walletAddress?: string;
   }) => void;
   'peer-joined': (data: {
     peerId: string;
@@ -36,6 +37,7 @@ export interface ClientToServerEvents {
     name?: string;
     videoEnabled?: boolean;
     audioEnabled?: boolean;
+    walletAddress?: string;
   }) => void;
   'leave-room': () => void;
   offer: (data: { to: string; offer: RTCSessionDescriptionInit }) => void;

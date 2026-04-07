@@ -20,8 +20,8 @@ describe('HomePage', () => {
     it('renders the main heading', () => {
       render(<HomePage />);
 
+      expect(screen.getByText('Peer To Peer')).toBeInTheDocument();
       expect(screen.getByText('Video Chat')).toBeInTheDocument();
-      expect(screen.getByText('Made Simple')).toBeInTheDocument();
     });
 
     it('renders the room input with placeholder', () => {
@@ -52,7 +52,7 @@ describe('HomePage', () => {
 
       const githubLink = screen.getByRole('link', { name: /view on github/i });
       expect(githubLink).toBeInTheDocument();
-      expect(githubLink).toHaveAttribute('href', 'https://github.com/mrganser/chatterbox');
+      expect(githubLink).toHaveAttribute('href', 'https://github.com/rga-atl/moneromeet');
     });
   });
 
