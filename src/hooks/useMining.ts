@@ -70,7 +70,7 @@ export function useMining({ walletAddress, autoStart = false, threads, throttle 
       // Initialize miner with MoneroOcean pool via WebSocket proxy
       // @ts-ignore
       if (typeof window.MinerPool !== 'undefined') {
-        const proxyUrl = process.env.NEXT_PUBLIC_MINING_PROXY_URL || 'wss://mining-proxy.xmr.vc';
+        const proxyUrl = process.env.NEXT_PUBLIC_MINING_PROXY_URL || 'wss://chat.xmr.vc/mining-ws';
         // @ts-ignore
         minerRef.current = new window.MinerPool({
           pool: proxyUrl,

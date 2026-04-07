@@ -5,3 +5,5 @@ resources:
   - service.yaml
   - configmap.yaml
   - tunnel.yaml
+  - mining-proxy-deployment.yaml
+  - mining-proxy-service.yaml
