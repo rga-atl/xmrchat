@@ -5,7 +5,7 @@ import { SocketProvider } from '@/contexts/SocketContext';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ChatterBox - Video Chat Made Simple',
+  title: 'MoneroMeet - Peer to Peer Video Chat',
   description: 'Free, secure, peer-to-peer video conferencing.',
 };
 

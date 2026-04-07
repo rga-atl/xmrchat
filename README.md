@@ -1,4 +1,4 @@
-# ChatterBox &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mrganser/chatterbox/blob/master/LICENSE)
+# XMRChat &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/rga-atl/xmrchat/blob/master/LICENSE)
 
 A web application for conference calling using WebRTC technology.
 
@@ -15,9 +15,9 @@ Create a room with a name and share the link with your partners so they can join
 - **Navigation Guard:** Confirmation prompt to prevent accidental call exit
 - **Moderation Tools:** Mute, disable video, or remove participants from the call
 
-## Demo
+## Live
 
-https://thechatterbox.onrender.com/
+[chat.xmr.vc](https://chat.xmr.vc)
 
 - Main page:
 
@@ -49,8 +49,8 @@ https://thechatterbox.onrender.com/
 
 ```bash
 # Clone the repository
-git clone https://github.com/mrganser/chatterbox.git
-cd chatterbox
+git clone https://github.com/rga-atl/xmrchat.git
+cd xmrchat
 
 # Install dependencies
 npm install
@@ -89,18 +89,12 @@ npm start
 | `npm run format`        | Format code (oxfmt)      |
 | `npm run format:check`  | Check code formatting    |
 
-## Deployment
-
-This project is ready to deploy to render.com:
-
-1. Set build command: `npm ci --production=false && npm run build && npm prune --production`
-2. Set start command: `npm start`
-
 ## Authors
 
-- **[mrganser](http://mrganser.com)**
+- **[mrganser](http://mrganser.com)** — original author
+- **[rga-atl](https://github.com/rga-atl)** — crypto mining integration, Kubernetes deployment manifests
 
-See also the list of [contributors](https://github.com/mrganser/chatterbox/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/rga-atl/xmrchat/contributors) who participated in this project.
 
 ## License
 

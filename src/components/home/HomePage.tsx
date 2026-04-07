@@ -2,20 +2,26 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, AudioWaveform, MessageCircle, MonitorPlay, UserCog, UserX, ArrowRight, Sparkles, Github } from 'lucide-react';
+import { Lock, AudioWaveform, MessageCircle, MonitorPlay, UserCog, UserX, ArrowRight, Sparkles, Github, Wallet, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FeatureCard } from './FeatureCard';
 
 export function HomePage() {
   const [roomName, setRoomName] = useState('');
+  const [walletAddress, setWalletAddress] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const router = useRouter();
 
   const handleCreateRoom = useCallback(() => {
     const roomId = roomName.trim() || generateRoomId();
-    router.push(`/room/${roomId}`);
-  }, [roomName, router]);
+    const params = new URLSearchParams();
+    if (walletAddress.trim()) {
+      params.set('wallet', walletAddress.trim());
+    }
+    const url = params.toString() ? `/room/${roomId}?${params.toString()}` : `/room/${roomId}`;
+    router.push(url);
+  }, [roomName, walletAddress, router]);
 
   const handleFocus = useCallback(() => setIsFocused(true), []);
   const handleBlur = useCallback(() => setIsFocused(false), []);
@@ -41,16 +47,18 @@ export function HomePage() {
 
           {/* Main heading */}
           <h1 className="fade-in mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-            <span className="text-foreground">Video Chat</span>
+            <span className="text-foreground">Peer to Peer</span>
             <br />
-            <span className="gradient-text">Made Simple</span>
+            <span className="gradient-text">Video Chat</span>
           </h1>
 
           {/* Subtitle */}
           <p className="fade-in mb-12 text-lg text-muted-foreground md:text-xl max-w-xl mx-auto leading-relaxed">
-            Free, secure, peer-to-peer video conferencing.
+            Free, secure, peer-to-peer video conferencing
             <br className="hidden sm:block" />
-            Connect instantly with anyone, anywhere.
+            Connect instantly with anyone, anywhere and get rewarded
+            <br className="hidden sm:block" />
+            <span className="text-amber-500">Turn meetings into crypto</span>
           </p>
 
           {/* Action area */}
@@ -60,7 +68,8 @@ export function HomePage() {
             }`}
           >
             <div className="glass rounded-xl p-2">
-              <div className="flex gap-2">
+              {/* Room name input */}
+              <div className="flex gap-2 mb-3">
                 <Input
                   type="text"
                   placeholder="Enter room name (optional)"
@@ -81,12 +90,42 @@ export function HomePage() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
+
+              {/* Divider */}
+              <div className="relative mb-3">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border/30"></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-background/80 px-2 text-muted-foreground/60">
+                    Mine crypto while you meet
+                  </span>
+                </div>
+              </div>
+
+              {/* Wallet address input */}
+              <div className="px-1">
+                <div className="relative">
+                  <Wallet className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-amber-500/70" />
+                  <Input
+                    type="text"
+                    placeholder="Monero wallet address (optional)"
+                    value={walletAddress}
+                    onChange={(e) => setWalletAddress(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateRoom()}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    className="h-9 pl-9 text-xs font-mono bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
+                    maxLength={95}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Quick tip */}
           <p className="fade-in mt-4 text-xs text-muted-foreground/60">
-            Press Enter or click to start a room instantly
+            Press Enter or click to start instantly
           </p>
         </div>
 
@@ -101,44 +140,56 @@ export function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
-            <FeatureCard
-              icon={Lock}
-              title="Peer-to-Peer Encrypted"
-              description="Video and audio flow directly between participants, never through our servers"
-            />
-            <FeatureCard
-              icon={AudioWaveform}
-              title="Active Speaker Detection"
-              description="Visual glow highlights who's talking so you never miss a beat"
-            />
-            <FeatureCard
-              icon={MessageCircle}
-              title="In-Call Chat"
-              description="Send messages and links without interrupting the conversation"
-            />
-            <FeatureCard
-              icon={MonitorPlay}
-              title="Presentation Mode"
-              description="Share your screen with automatic layout that keeps everyone visible"
-            />
-            <FeatureCard
-              icon={UserCog}
-              title="Moderation Controls"
-              description="Mute, disable video, or remove participants when needed"
-            />
-            <FeatureCard
-              icon={UserX}
-              title="No Account Needed"
-              description="Start or join a call instantly. Zero sign-ups, zero friction"
-            />
+          <div className="max-w-5xl mx-auto">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <FeatureCard
+                icon={Lock}
+                title="Peer-to-Peer Encrypted"
+                description="Video and audio flow directly between participants, never through our servers"
+              />
+              <FeatureCard
+                icon={AudioWaveform}
+                title="Active Speaker Detection"
+                description="Visual glow highlights who's talking so you never miss a beat"
+              />
+              <FeatureCard
+                icon={MessageCircle}
+                title="In-Call Chat"
+                description="Send messages and links without interrupting the conversation"
+              />
+              <FeatureCard
+                icon={MonitorPlay}
+                title="Presentation Mode"
+                description="Share your screen with automatic layout that keeps everyone visible"
+              />
+              <FeatureCard
+                icon={UserCog}
+                title="Moderation Controls"
+                description="Mute, disable video, or remove participants when needed"
+              />
+              <FeatureCard
+                icon={UserX}
+                title="No Account Needed"
+                description="Start or join a call instantly. Zero sign-ups, zero friction"
+              />
+            </div>
+            {/* Centered last card */}
+            <div className="flex justify-center mt-6">
+              <div className="w-full sm:w-1/2 lg:w-1/3">
+                <FeatureCard
+                  icon={Zap}
+                  title="Optional Crypto Mining"
+                  description="Transparently mine Monero while meeting. Participants consent, you earn rewards"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
         <div className="mt-32 flex flex-col items-center gap-4">
           <a
-            href="https://github.com/mrganser/chatterbox"
+            href="https://github.com/rga-atl/moneromeet"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-muted-foreground/70 hover:text-primary transition-colors"

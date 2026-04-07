@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef, useMemo, Activity } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useRoom } from '@/hooks/useRoom';
 import { useChat } from '@/hooks/useChat';
 import { useNavigationGuard } from '@/hooks/useNavigationGuard';
+import { useMining } from '@/hooks/useMining';
 import { VideoGrid } from './VideoGrid';
 import { Toolbar } from './Toolbar';
 import { ShareDialog } from './ShareDialog';
@@ -12,6 +13,8 @@ import { ChatPanel } from './ChatPanel';
 import { PreCallActions } from './PreCallActions';
 import { RoomError } from './RoomError';
 import { LoadingState } from './LoadingState';
+import { MiningConsentDialog } from './MiningConsentDialog';
+import { MiningIndicator } from './MiningIndicator';
 
 interface VideoRoomProps {
   roomId: string;
@@ -19,7 +22,9 @@ interface VideoRoomProps {
 
 export function VideoRoom({ roomId }: VideoRoomProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [userName, setUserName] = useState('');
+  const walletAddress = searchParams.get('wallet') || '';
   const [startWithVideo, setStartWithVideo] = useState(true);
   const [startWithAudio, setStartWithAudio] = useState(true);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -27,6 +32,15 @@ export function VideoRoom({ roomId }: VideoRoomProps) {
   const chat = useChat();
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showToolbar, setShowToolbar] = useState(true);
+  const [showMiningConsent, setShowMiningConsent] = useState(false);
+  const [miningAccepted, setMiningAccepted] = useState(false);
+
+  // Initialize mining (will only start when user accepts)
+  const mining = useMining({
+    walletAddress: room.roomWalletAddress,
+    autoStart: false,
+    throttle: 0.5, // Use 50% of CPU
+  });
 
   // Show confirmation dialog when user tries to leave while in a call
   const isInCall = room.roomState.status === 'connected';
@@ -72,6 +86,23 @@ export function VideoRoom({ roomId }: VideoRoomProps) {
 
   const roomUrl = typeof window !== 'undefined' ? window.location.href : '';
 
+  // Show mining consent dialog when room has wallet address and user hasn't accepted yet
+  useEffect(() => {
+    if (room.roomWalletAddress && !miningAccepted && room.roomState.status === 'connected') {
+      setShowMiningConsent(true);
+    }
+  }, [room.roomWalletAddress, miningAccepted, room.roomState.status]);
+
+  const handleMiningAccept = useCallback(() => {
+    setMiningAccepted(true);
+    setShowMiningConsent(false);
+    mining.startMining();
+  }, [mining]);
+
+  const handleMiningDecline = useCallback(() => {
+    handleLeave();
+  }, [handleLeave]);
+
   // Memoize moderation handlers to prevent re-renders of VideoTile children
   const moderation = useMemo(
     () => ({
@@ -101,7 +132,9 @@ export function VideoRoom({ roomId }: VideoRoomProps) {
         startWithAudio={startWithAudio}
         onToggleStartWithVideo={() => setStartWithVideo((v) => !v)}
         onToggleStartWithAudio={() => setStartWithAudio((a) => !a)}
-        onJoin={() => room.joinRoom({ video: startWithVideo, audio: startWithAudio })}
+        onJoin={() =>
+          room.joinRoom({ video: startWithVideo, audio: startWithAudio, walletAddress })
+        }
       />
     );
   }
@@ -151,6 +184,21 @@ export function VideoRoom({ roomId }: VideoRoomProps) {
         </Activity>
       </div>
 
+      {/* Mining indicator */}
+      {mining.isActive && (
+        <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-10">
+          <MiningIndicator
+            isActive={mining.isActive}
+            isPaused={mining.isPaused}
+            hashrate={mining.hashrate}
+            totalHashes={mining.totalHashes}
+            onPause={mining.pauseMining}
+            onResume={mining.resumeMining}
+            onStop={mining.stopMining}
+          />
+        </div>
+      )}
+
       {/* Floating toolbar */}
       <Toolbar
         videoEnabled={room.localStream.videoEnabled}
@@ -169,6 +217,16 @@ export function VideoRoom({ roomId }: VideoRoomProps) {
 
       {/* Share dialog */}
       <ShareDialog open={showShareDialog} onOpenChange={setShowShareDialog} roomUrl={roomUrl} />
+
+      {/* Mining consent dialog */}
+      {room.roomWalletAddress && (
+        <MiningConsentDialog
+          open={showMiningConsent}
+          walletAddress={room.roomWalletAddress}
+          onAccept={handleMiningAccept}
+          onDecline={handleMiningDecline}
+        />
+      )}
     </div>
   );
 }
