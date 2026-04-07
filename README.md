@@ -144,29 +144,6 @@ The `mining-proxy` pod itself is configured via:
 
 This implementation is **opt-in only**: explicit consent dialog, visible status, pause/stop controls at all times, and the wallet address is shown to every participant. Do not deploy this in a way that hides mining from users.
 
-## Deployment
-
-### Docker
-
-```bash
-docker build -t rga-atl/xmrchat:latest .
-docker push rga-atl/xmrchat:latest
-```
-
-### Kubernetes
-
-Manifests live under [`kubernetes/`](kubernetes/). Apply with:
-
-```bash
-kubectl apply -k kubernetes/
-```
-
-For local iteration, use [Skaffold](https://skaffold.dev):
-
-```bash
-skaffold dev
-```
-
 ## Authors
 
 - **[mrganser](http://mrganser.com)** — original author
